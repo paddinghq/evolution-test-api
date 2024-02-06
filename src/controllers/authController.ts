@@ -33,6 +33,16 @@ class AuthController {
   signin = async (req: Request, res: Response, next: NextFunction) => {
     await this.authService.signin(req, res, next);
   };
+
+  /**
+   * @route POST api/v1/auth/complete-signup
+   * @desc Complete user registration
+   * @access Public
+   */
+
+  completeSignup = async (req: Request, res: Response, next: NextFunction) => {
+    await this.authService.completeSignup(req, res, next);
+  }
 }
 
 export default AuthController;
