@@ -32,7 +32,9 @@ export const sendMail = async (
   try {
     await transporter.sendMail(mailOption);
   } catch (error) {
-    throw new Error("Error sending email");
+    if (error instanceof Error) {
+      throw new Error(`Error sending email: ${error.message}`);
+    }
   }
 };
 
