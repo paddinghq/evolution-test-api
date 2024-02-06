@@ -14,4 +14,6 @@ router.post("/signup", authController.signup);
 
 router.post("/verify-otp", authController.verifyOtp);
 
+router.post("/signin", authController.signin);
+
 export default router;

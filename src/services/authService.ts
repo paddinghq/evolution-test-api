@@ -2,7 +2,7 @@
 import { type NextFunction, type Request, type Response } from "express";
 // import formatHTTPLoggerResponse, { httpLogger } from "./LoggerService";
 import { UserModel } from "../models/userModel";
-import { type IUser } from "../types/types";
+import { SignInUser, type IUser } from "../types/types";
 import {
   BadRequest,
   Conflict,
@@ -17,9 +17,11 @@ import {
   validatePassword,
   validateEmail,
   validateCompleteSignup,
+  validateSignIn,
 } from "../utils/validator";
 import crypto from "crypto";
 import { handleEmailVerification, sendMail } from "../utils/email";
+import { generateToken } from "../utils/authorization";
 
 class AuthService {
   /**
@@ -133,6 +135,83 @@ class AuthService {
         message: "User verified successfully",
         user: user.toJSON(),
       });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * @method signin
+   * @static
+   * @async
+   * @returns {Promise<void>}
+   */
+  static async signin(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const reqBody: SignInUser = req.body;
+
+      const errors = await validateSignIn(reqBody);
+      if (errors.length > 0) {
+        throw new InvalidInput("Invalid input", errors);
+      }
+
+      let { email, password } = reqBody;
+      email = email.toLowerCase();
+
+      // Check if user exists
+      const existingUser = await UserModel.findOne({ email });
+      if (!existingUser) {
+        throw new ResourceNotFound("User not found");
+      }
+
+      // Pasword Check
+      const isPasswordMatch = await existingUser.isPasswordMatch(password);
+
+      if (!isPasswordMatch) {
+        throw new Unauthorized("Authentication failed: wrong password");
+      }
+
+      if (!existingUser.isVerified) {
+        if (
+          existingUser.otp == null ||
+          (existingUser.otpExpiry && existingUser.otpExpiry < new Date())
+        ) {
+          const { verificationCode, otpExpiry } =
+            await handleEmailVerification(email);
+
+          // httpLogger.info("Verification email sent successfully");
+
+          await existingUser.updateOne({ otp: verificationCode, otpExpiry });
+        }
+
+        throw new Unauthorized(
+          "User is not verified, check your email for verification code"
+        );
+      }
+
+      // Generate token for authorization
+      const payload = { id: existingUser.id };
+
+      const token = generateToken(payload, "access");
+      res.header("authorization", `Bearer ${token}`);
+
+      const resPayload = {
+        success: true,
+        message: "Login successful!",
+        user: existingUser.toJSON(),
+        token,
+      };
+
+      res.status(200).json(resPayload);
+
+      // httpLogger.info(
+      //   "Login successful",
+      //   formatHTTPLoggerResponse(req, res, resPayload)
+      // );
     } catch (error) {
       next(error);
     }

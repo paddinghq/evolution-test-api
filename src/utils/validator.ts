@@ -1,4 +1,4 @@
-import { type IUser } from "../types/types";
+import { SignInUser, type IUser } from "../types/types";
 // import { isValidPhone } from "./otp";
 
 export interface IError {
@@ -89,6 +89,35 @@ export async function validateCompleteSignup(
   const dateOfBirthErrors = validateDateOfBirth(dateOfBirth);
   if (dateOfBirthErrors.length > 0) {
     errors.push(...dateOfBirthErrors);
+  }
+
+  return errors;
+}
+
+export async function validateSignIn(payload: SignInUser): Promise<IError[]> {
+  const errors = [];
+
+  if (payload == null) {
+    errors.push({
+      field: "payload",
+      message: "Payload is required",
+    });
+    return errors;
+  }
+
+  const { email, password } = payload;
+
+  const emailErrors = validateEmail(email);
+  if (emailErrors.length > 0) {
+    errors.push(...emailErrors);
+  }
+
+  if (password == null || password === "") {
+    errors.push({
+      field: "password",
+      message: "Password is required",
+    });
+    return errors;
   }
 
   return errors;

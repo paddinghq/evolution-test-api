@@ -24,6 +24,15 @@ class AuthController {
   verifyOtp = async (req: Request, res: Response, next: NextFunction) => {
     await this.authService.verifyOtp(req, res, next);
   };
+
+  /**
+   * @route POST api/v1/auth/signin
+   * @desc Login a user
+   * @access Public
+   */
+  signin = async (req: Request, res: Response, next: NextFunction) => {
+    await this.authService.signin(req, res, next);
+  };
 }
 
 export default AuthController;
