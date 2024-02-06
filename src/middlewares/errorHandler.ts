@@ -124,7 +124,7 @@ const errorHandler = (
   }
 
   res.status(statusCode).json(responsePayload);
-  console.log(err);
+  console.log(err.message);
   // return httpLogger.error(
   //   cleanedMessage,
   //   formatHTTPLoggerResponse(req, res, { message: `${err}` })

@@ -2,7 +2,7 @@
 import { type NextFunction, type Request, type Response } from "express";
 // import formatHTTPLoggerResponse, { httpLogger } from "./LoggerService";
 import { UserModel } from "../models/userModel";
-import { type IUser  } from "../types/types";
+import { type IUser } from "../types/types";
 import {
   BadRequest,
   Conflict,
@@ -87,7 +87,56 @@ class AuthService {
     }
   }
 
+  /**
+   * @method verifyOtp
+   * @static
+   * @async
+   * @returns {Promise<void>}
+   */
+  static async verifyOtp(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { email, otp } = req.body;
 
+      // const isValid = await isValidCode(phone, otp);
+      // if (isValid) {}
+      const user = await UserModel.findOne({ email });
+      if (user == null) {
+        throw new ResourceNotFound("User not found");
+      }
+
+      if (otp !== user.otp) {
+        throw new Unauthorized("Invalid OTP");
+      }
+
+      if (user.otpExpiry && user.otpExpiry < new Date()) {
+        const { verificationCode, otpExpiry } =
+          await handleEmailVerification(email);
+        // httpLogger.info("Verification email sent successfully");
+
+        await user.updateOne({ otp: verificationCode, otpExpiry });
+
+        throw new Unauthorized("OTP expired, check your email for new OTP");
+      }
+
+      user.isVerified = true;
+      user.otp = undefined;
+      user.otpExpiry = undefined;
+
+      await user.save();
+
+      res.status(200).json({
+        success: true,
+        message: "User verified successfully",
+        user: user.toJSON(),
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export default AuthService;
