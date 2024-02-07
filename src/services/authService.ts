@@ -41,6 +41,7 @@ class AuthService {
         _id: undefined,
         isVerified: undefined,
         registrationCompleted: undefined,
+        otp: undefined,
       };
 
       const errors: IError[] = await validateSignup(reqBody);
@@ -235,6 +236,7 @@ class AuthService {
         _id: undefined,
         isVerified: undefined,
         registrationCompleted: undefined,
+        otp: undefined,
       };
 
       const errors = await validateCompleteSignup(reqBody);
