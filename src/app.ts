@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 import morgan from "morgan";
 import logger from "morgan";
 import dotenv from "dotenv";
+// const dotenv = require('dotenv');
 import cors from "cors";
 import fs from "fs";
 import indexRouter from "./routes/index";
