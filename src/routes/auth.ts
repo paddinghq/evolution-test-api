@@ -18,4 +18,8 @@ router.post("/signin", authController.signin);
 
 router.post("/complete-signup", authController.completeSignup);
 
+router.post("/forgot-password", authController.forgotPassword);
+
+router.put("/reset-password", authController.resetPassword);
+
 export default router;

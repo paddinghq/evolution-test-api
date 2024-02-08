@@ -43,6 +43,27 @@ class AuthController {
   completeSignup = async (req: Request, res: Response, next: NextFunction) => {
     await this.authService.completeSignup(req, res, next);
   }
+
+  /**
+   * @route POST api/v1/auth/forgot-password
+   * @desc send otp to user mail
+   * @access Public
+   */
+
+  forgotPassword = async (req: Request, res: Response, next: NextFunction) => {
+    await this.authService.forgotpassword(req, res, next);
+  }
+
+
+  /**
+  * @route PUT api/v1/auth/reset-password
+   * @desc update user password
+   * @access Public
+   */
+
+  resetPassword = async (req: Request, res: Response, next: NextFunction) => {
+    await this.authService.resetpassword(req, res, next);
+  }
 }
 
 export default AuthController;
