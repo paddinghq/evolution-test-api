@@ -116,7 +116,7 @@ class AuthService {
 
       if (user.otpExpiry && user.otpExpiry < new Date()) {
         const { verificationCode, otpExpiry } =
-          await handleEmailVerification(email);
+          await handleEmailVerification(email,"Email Verification Code");
         // httpLogger.info("Verification email sent successfully");
 
         await user.updateOne({ otp: verificationCode, otpExpiry });
@@ -181,7 +181,7 @@ class AuthService {
           (existingUser.otpExpiry && existingUser.otpExpiry < new Date())
         ) {
           const { verificationCode, otpExpiry } =
-            await handleEmailVerification(email);
+            await handleEmailVerification(email,"Verification Code");
 
           // httpLogger.info("Verification email sent successfully");
 
@@ -293,6 +293,114 @@ class AuthService {
     } catch (error) {
       next(error);
     }
+  }
+
+  /**
+   * @method forgotpassword
+   * @static
+   * @async
+   * @returns {Promise<void>}
+   */
+  static async forgotpassword(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { email } = req.body;
+
+      if (!email) {
+        throw new InvalidInput('Email is required');
+      }
+
+      const user = await AuthService.findUserByEmail(email);
+
+      const { verificationCode, otpExpiry } =
+        await handleEmailVerification(email.toLowerCase(),"Password Verification Code");
+
+      user.otp = verificationCode;
+      user.otpExpiry = otpExpiry;
+
+      await user.save();
+
+      const resPayload = {
+        success: true,
+        message: `A verification code was sent to ${email}`,
+      };
+
+      res.status(200).json(resPayload);
+
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * @method resetpassword
+   * @static
+   * @async
+   * @returns {Promise<void>}
+   */
+  static async resetpassword(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { email,otp,password,confirmPassword } = req.body;
+
+      
+      if (!email || !otp || !password || !confirmPassword) {
+        throw new InvalidInput('All fields are required');
+      }
+
+      const user = await AuthService.findUserByEmail(email);
+
+      const otpExpiry = user?.otpExpiry
+
+      
+      if (otp !== user.otp) {
+        throw new Unauthorized('Invalid OTP');
+      }
+      
+      if (!otpExpiry) {
+        throw new Unauthorized('OTP expiry not found');
+      }
+
+      if (password !== confirmPassword) {
+        throw new InvalidInput('Password does not match');
+      }
+
+      if (new Date() > otpExpiry) {
+        throw new Unauthorized('OTP has expired');
+      }
+
+      user.password = password;
+      user.otp = undefined;
+
+
+      await user.save();
+
+      const resPayload = {
+        success: true,
+        message: `Password reset successfully`,
+      };
+
+      res.status(201).json(resPayload);
+
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  private static async findUserByEmail(email: string) {
+    const user = await UserModel.findOne({ email });
+
+    if (!user) {
+      throw new ResourceNotFound('User not found');
+    }
+
+    return user;
   }
 }
 
