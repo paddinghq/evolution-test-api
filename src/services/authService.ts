@@ -365,6 +365,11 @@ class AuthService {
 
       const user = await AuthService.findUserByEmail(email);
 
+      const errors = validatePassword(password);
+      if (errors.length > 0) {
+        throw new InvalidInput("Invalid input", errors);
+      }
+      
       const otpExpiry = user?.otpExpiry;
 
       if (otp !== user.otp) {
