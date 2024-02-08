@@ -19,7 +19,6 @@ import {
   validateCompleteSignup,
   validateSignIn,
 } from "../utils/validator";
-import crypto from "crypto";
 import { handleEmailVerification, sendMail } from "../utils/email";
 import { generateToken } from "../utils/authorization";
 
@@ -61,16 +60,17 @@ class AuthService {
       }
 
       const newUser = new UserModel(reqBody);
-
-      const { verificationCode, otpExpiry } =
-        await handleEmailVerification(email);
-
-      newUser.otp = verificationCode;
-      newUser.otpExpiry = otpExpiry;
       // await sendVerificationCode(phone);
 
       // Save user if there is no error
       await newUser.save();
+
+      const { verificationCode, otpExpiry } = await handleEmailVerification(
+        email,
+        "Email Verification Code"
+      );
+
+      await newUser.updateOne({ otp: verificationCode, otpExpiry });
 
       const resPayload = {
         success: true,
@@ -105,23 +105,16 @@ class AuthService {
 
       // const isValid = await isValidCode(phone, otp);
       // if (isValid) {}
-      const user = await UserModel.findOne({ email });
-      if (user == null) {
-        throw new ResourceNotFound("User not found");
-      }
+      const user = await AuthService.findUserByEmail(email);
 
       if (otp !== user.otp) {
         throw new Unauthorized("Invalid OTP");
       }
 
       if (user.otpExpiry && user.otpExpiry < new Date()) {
-        const { verificationCode, otpExpiry } =
-          await handleEmailVerification(email,"Email Verification Code");
-        // httpLogger.info("Verification email sent successfully");
-
-        await user.updateOne({ otp: verificationCode, otpExpiry });
-
-        throw new Unauthorized("OTP expired, check your email for new OTP");
+        throw new Unauthorized(
+          "Verification code has expired, request for a new one"
+        );
       }
 
       user.isVerified = true;
@@ -163,34 +156,17 @@ class AuthService {
       email = email.toLowerCase();
 
       // Check if user exists
-      const existingUser = await UserModel.findOne({ email });
-      if (!existingUser) {
-        throw new ResourceNotFound("User not found");
-      }
+      const existingUser = await AuthService.findUserByEmail(email);
 
       // Pasword Check
       const isPasswordMatch = await existingUser.isPasswordMatch(password);
 
       if (!isPasswordMatch) {
-        throw new Unauthorized("Authentication failed: wrong password");
+        throw new Unauthorized("Authentication failed: invalid credentials");
       }
 
       if (!existingUser.isVerified) {
-        if (
-          existingUser.otp == null ||
-          (existingUser.otpExpiry && existingUser.otpExpiry < new Date())
-        ) {
-          const { verificationCode, otpExpiry } =
-            await handleEmailVerification(email,"Verification Code");
-
-          // httpLogger.info("Verification email sent successfully");
-
-          await existingUser.updateOne({ otp: verificationCode, otpExpiry });
-        }
-
-        throw new Unauthorized(
-          "User is not verified, check your email for verification code"
-        );
+        throw new Unauthorized("User is not verified");
       }
 
       // Generate token for authorization
@@ -247,25 +223,10 @@ class AuthService {
       reqBody.email = email;
 
       // Check if user exists
-      const existingUser = await UserModel.findOne({ email });
-      if (existingUser == null) {
-        throw new ResourceNotFound("User not found");
-      } else if (!existingUser.isVerified) {
-        if (
-          existingUser.otp == null ||
-          (existingUser.otpExpiry && existingUser.otpExpiry < new Date())
-        ) {
-          const { verificationCode, otpExpiry } =
-            await handleEmailVerification(email);
+      const existingUser = await AuthService.findUserByEmail(email);
 
-          // httpLogger.info("Verification email sent successfully");
-
-          await existingUser.updateOne({ otp: verificationCode, otpExpiry });
-        }
-
-        throw new Unauthorized(
-          "User is not verified, check your email for verification code"
-        );
+      if (!existingUser.isVerified) {
+        throw new Unauthorized("User is not verified");
       }
 
       const updatedUser = await UserModel.findOneAndUpdate(
@@ -296,6 +257,54 @@ class AuthService {
   }
 
   /**
+   * @method requestOtp
+   * @static
+   * @async
+   * @returns {Promise<void>}
+   */
+
+  static async requestOtp(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { email } = req.body;
+
+      if (!email) {
+        throw new InvalidInput("Email is required");
+      }
+
+      const user = await AuthService.findUserByEmail(email);
+
+      if (user.isVerified) {
+        throw new Unauthorized("User is already verified");
+      }
+
+      const { verificationCode, otpExpiry } = await handleEmailVerification(
+        email,
+        "Email Verification Code"
+      );
+
+      // httpLogger.info("Verification email sent successfully");
+
+      await user.updateOne({ otp: verificationCode, otpExpiry });
+
+      res.status(200).json({
+        success: true,
+        message: `A verification code was sent to ${email}`,
+      });
+
+      // httpLogger.info(
+      //   "Verification code sent successfully",
+      //   formatHTTPLoggerResponse(req, res, { email })
+      // );
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
    * @method forgotpassword
    * @static
    * @async
@@ -310,13 +319,15 @@ class AuthService {
       const { email } = req.body;
 
       if (!email) {
-        throw new InvalidInput('Email is required');
+        throw new InvalidInput("Email is required");
       }
 
       const user = await AuthService.findUserByEmail(email);
 
-      const { verificationCode, otpExpiry } =
-        await handleEmailVerification(email.toLowerCase(),"Password Verification Code");
+      const { verificationCode, otpExpiry } = await handleEmailVerification(
+        email.toLowerCase(),
+        "Password Verification Code"
+      );
 
       user.otp = verificationCode;
       user.otpExpiry = otpExpiry;
@@ -329,7 +340,6 @@ class AuthService {
       };
 
       res.status(200).json(resPayload);
-
     } catch (error) {
       next(error);
     }
@@ -347,37 +357,34 @@ class AuthService {
     next: NextFunction
   ): Promise<void> {
     try {
-      const { email,otp,password,confirmPassword } = req.body;
+      const { email, otp, password, confirmPassword } = req.body;
 
-      
       if (!email || !otp || !password || !confirmPassword) {
-        throw new InvalidInput('All fields are required');
+        throw new InvalidInput("All fields are required");
       }
 
       const user = await AuthService.findUserByEmail(email);
 
-      const otpExpiry = user?.otpExpiry
+      const otpExpiry = user?.otpExpiry;
 
-      
       if (otp !== user.otp) {
-        throw new Unauthorized('Invalid OTP');
+        throw new Unauthorized("Invalid OTP");
       }
-      
+
       if (!otpExpiry) {
-        throw new Unauthorized('OTP expiry not found');
+        throw new Unauthorized("OTP expiry not found");
       }
 
       if (password !== confirmPassword) {
-        throw new InvalidInput('Password does not match');
+        throw new InvalidInput("Password does not match");
       }
 
       if (new Date() > otpExpiry) {
-        throw new Unauthorized('OTP has expired');
+        throw new Unauthorized("OTP has expired");
       }
 
       user.password = password;
       user.otp = undefined;
-
 
       await user.save();
 
@@ -387,7 +394,6 @@ class AuthService {
       };
 
       res.status(201).json(resPayload);
-
     } catch (error) {
       next(error);
     }
@@ -397,7 +403,7 @@ class AuthService {
     const user = await UserModel.findOne({ email });
 
     if (!user) {
-      throw new ResourceNotFound('User not found');
+      throw new ResourceNotFound("User not found");
     }
 
     return user;
