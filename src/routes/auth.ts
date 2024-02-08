@@ -14,6 +14,8 @@ router.post("/signup", authController.signup);
 
 router.post("/verify-otp", authController.verifyOtp);
 
+router.post("/request-otp", authController.requestOtp);
+
 router.post("/signin", authController.signin);
 
 router.post("/complete-signup", authController.completeSignup);
