@@ -44,7 +44,7 @@ interface IOtp {
 }
 
 // Separate function for handling email verification
-export async function handleEmailVerification(email?: string): Promise<IOtp> {
+export async function handleEmailVerification(email?: string,subject? :any): Promise<IOtp> {
   if (email == null) {
     return {};
   }
@@ -53,7 +53,7 @@ export async function handleEmailVerification(email?: string): Promise<IOtp> {
 
   await sendMail(
     email,
-    "Email Verification",
+    subject,
     `Your verification code is: ${verificationCode}`
   );
 
