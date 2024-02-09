@@ -10,8 +10,19 @@ import fs from "fs";
 import indexRouter from "./routes/index";
 import connectDB from "./config/db";
 import { errorHandler, routeNotFound } from "./middlewares/errorHandler";
+import { v2 as cloudinary } from "cloudinary"
+
 
 dotenv.config();
+
+// Configure cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_API_CLOUD,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+
 //= ======== DB Connect ===========
 // if (process.env.NODE_ENV === "test") {
 //   dbConnect();
@@ -20,6 +31,7 @@ connectDB();
 // }
 
 const app = express();
+
 
 app.use(logger("dev"));
 app.use(express.json());
