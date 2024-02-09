@@ -15,18 +15,17 @@ import { hashData } from "../utils/authorization";
 
 class userService {
   /**
-   * @method getUser
+   * @method getUserProfile
    * @static
    * @async
-   * @returns {Promise<IUsers>}
+   * @returns {Promise<void>}
    */
 
-  static async getUser(req: Request, res: Response, next: NextFunction) {
+  static async getUserProfile(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId: string = req.params.id;
       const authUserId = req.authUser?.id;
 
-      if (authUserId !== userId) {
+      if (authUserId == null) {
         throw new Forbidden("You are not authorized to perform this action");
       }
 
