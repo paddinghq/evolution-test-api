@@ -1,5 +1,6 @@
-import { Schema, model } from "mongoose";
+import { Schema, model, PaginateModel } from "mongoose";
 import { IEvent, } from "../types/eventType";
+import paginate from "mongoose-paginate-v2";
 
 
 // Schema for the event document
@@ -54,4 +55,8 @@ const eventSchema = new Schema<IEvent>(
     { timestamps: true }
 );
 
-export const EventModel = model<IEvent>("Event", eventSchema);
+eventSchema.plugin(paginate);
+
+// interface EventDocument extends Document, IEventData {}
+
+export const EventModel = model<IEvent, PaginateModel<IEvent>>("Event", eventSchema, "events");

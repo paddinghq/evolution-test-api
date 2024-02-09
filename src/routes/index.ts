@@ -1,10 +1,10 @@
 import express from "express";
 import usersRoute from "./users";
 import authRoute from "./auth";
-import eventRoute from "./event"
-import multer from 'multer';
+import eventRoute from "./event";
+import favouriteRoute from "./favourites";
+import multer from "multer";
 import { authorizeUser } from "../middlewares/authorizeUser";
-
 
 const router = express.Router();
 
@@ -12,7 +12,7 @@ const router = express.Router();
 const storage = multer.diskStorage({});
 
 const upload = multer({
-    storage: storage
+  storage: storage,
 });
 
 router.get("/", (req, res) => {
@@ -24,6 +24,8 @@ router.use("/users", usersRoute);
 
 router.use("/auth", authRoute);
 
-router.use("/events", authorizeUser, upload.single("mediaFile"), eventRoute)
+router.use("/events", authorizeUser, upload.single("mediaFile"), eventRoute);
+
+router.use("/favourites", authorizeUser, favouriteRoute);
 
 export default router;
