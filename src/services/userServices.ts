@@ -1,31 +1,56 @@
-import express,{Request, Response} from 'express';
-import { UserModel } from "../models/userModel"
-
+/* eslint-disable @typescript-eslint/no-extraneous-class */
+import { type NextFunction, type Request, type Response } from "express";
+import { UserModel } from "../models/userModel";
+// import formatHTTPLoggerResponse, { httpLogger } from "./LoggerService";
+import {
+  Forbidden,
+  InvalidInput,
+  ResourceNotFound,
+  ServerError,
+} from "../middlewares/errorHandler";
+import { IUser } from "../types/types";
+import { IError } from "../utils/validator";
+import { handleEmailVerification } from "../utils/email";
+import { hashData } from "../utils/authorization";
 
 class userService {
   /**
-   * @method getAllUsers
+   * @method getUser
    * @static
    * @async
    * @returns {Promise<IUsers>}
    */
 
-  static async getAllUsers(req:Request, res:Response) {
+  static async getUser(req: Request, res: Response, next: NextFunction) {
     try {
-      const users = await UserModel.find();
+      const userId: string = req.params.id;
+      const authUserId = req.authUser?.id;
 
-      if (users) {
-        return res.status(401).json({
-          message: `Users retrieved successfully`,
-          data: users,
-        })
+      if (authUserId !== userId) {
+        throw new Forbidden("You are not authorized to perform this action");
       }
+
+      const user = await UserModel.findOne({ _id: authUserId });
+
+      if (!user) {
+        throw new ResourceNotFound("No user found!!");
+      }
+
+      // httpLogger.info(
+      //   `User with id: ${authUserId} retrieved successfully!`,
+      //   formatHTTPLoggerResponse(req, res, user)
+      // );
+
+      return res.status(200).json({
+        success: true,
+        user,
+      });
     } catch (error) {
-      console.log(error)
-      return res.status(500).json({
-        message: 'Internal Server Error',
-        success: false,
-      })
+      // httpLogger.error(
+      //   `Failed with ${error} error`,
+      //   formatHTTPLoggerResponse(req, res, { message: error })
+      // );
+      next(error);
     }
   }
 }
