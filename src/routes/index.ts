@@ -1,5 +1,5 @@
 import express from "express";
-import usersRoute from "./users";
+import usersRoute from "./user";
 import authRoute from "./auth";
 import eventRoute from "./event";
 import favouriteRoute from "./favourites";
@@ -20,7 +20,7 @@ router.get("/", (req, res) => {
 });
 
 // controllers for users route
-router.use("/users", usersRoute);
+router.use("/user", usersRoute);
 
 router.use("/auth", authRoute);
 
