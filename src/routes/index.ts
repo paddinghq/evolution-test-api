@@ -2,7 +2,8 @@ import express from "express";
 import usersRoute from "./users";
 import authRoute from "./auth";
 import eventRoute from "./event"
-import multer, { Multer } from 'multer';
+import multer from 'multer';
+import { authorizeUser } from "../middlewares/authorizeUser";
 
 
 const router = express.Router();
@@ -23,6 +24,6 @@ router.use("/users", usersRoute);
 
 router.use("/auth", authRoute);
 
-router.use("/events", upload.single("mediaFile"), eventRoute)
+router.use("/events", authorizeUser, upload.single("mediaFile"), eventRoute)
 
 export default router;
