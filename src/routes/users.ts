@@ -9,7 +9,8 @@ router.get("/", (req, res) => {
   res.send("users route");
 });
 
-router.get("/all", userController.getUsers);
+router.get("/All", userController.getUsers);
+router.get('/:id', userController.getUser);
 
 
 export default router;

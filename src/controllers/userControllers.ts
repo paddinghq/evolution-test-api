@@ -1,5 +1,5 @@
 
-import { NextFunction,Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import userService from '../services/userServices';
 
 
@@ -13,8 +13,8 @@ class UserController {
    * @desc get all registered users
    * @access Public.
    */
-   getUsers = async (req:Request, res:Response) => {
-    await this.userService.getAllUsers(req, res);
+   getUsers = async (req:Request, res:Response, next:NextFunction) => {
+    await this.userService.getAllUsers(req, res, next);
   };
 
   /**
@@ -23,7 +23,7 @@ class UserController {
    * @access Public
    */
   getUser = async (req:Request, res:Response, next:NextFunction) => {
-    await this.userService.getUser(req, res, next);
+    await userService.getUser(req, res, next);
   };
 
 }
