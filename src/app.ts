@@ -1,17 +1,13 @@
-import createError, { HttpError } from "http-errors";
-import express, { Request, Response, NextFunction } from "express";
+import express, { Request, Response } from "express";
 import path from "path";
 import cookieParser from "cookie-parser";
-import morgan from "morgan";
 import logger from "morgan";
 import dotenv from "dotenv";
 import cors from "cors";
-import fs from "fs";
 import indexRouter from "./routes/index";
 import connectDB from "./config/db";
 import { errorHandler, routeNotFound } from "./middlewares/errorHandler";
-import { v2 as cloudinary } from "cloudinary"
-
+import { v2 as cloudinary } from "cloudinary";
 
 dotenv.config();
 
@@ -22,7 +18,6 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-
 //= ======== DB Connect ===========
 // if (process.env.NODE_ENV === "test") {
 //   dbConnect();
@@ -32,14 +27,13 @@ connectDB();
 
 const app = express();
 
-
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(
   cors({
-    origin: ["*"],
+    origin: "*",
     optionsSuccessStatus: 200,
     credentials: true,
   })
