@@ -3,6 +3,7 @@ import usersRoute from "./user";
 import authRoute from "./auth";
 import eventRoute from "./event";
 import favouriteRoute from "./favourites";
+import notificationRoute from "./notification";
 import multer from "multer";
 import { authorizeUser } from "../middlewares/authorizeUser";
 
@@ -27,5 +28,7 @@ router.use("/auth", authRoute);
 router.use("/events", authorizeUser, upload.single("mediaFile"), eventRoute);
 
 router.use("/favourites", authorizeUser, favouriteRoute);
+
+router.use("/notifications", notificationRoute);
 
 export default router;

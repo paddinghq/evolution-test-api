@@ -183,6 +183,7 @@ class AuthService {
         token,
       };
 
+
       res.status(200).json(resPayload);
 
       // httpLogger.info(
