@@ -8,6 +8,24 @@ class UserController {
   }
 
   /**
+   * @route GET api/v1/users.
+   * @desc get all registered users
+   * @access Public.
+   */
+  getUsers = async (req: Request, res: Response, next: NextFunction) => {
+    await this.userService.getAllUsers(req, res, next);
+  };
+
+  /**
+   * @route GET api/v1/user
+   * @desc get a registered user
+   * @access Public
+   */
+  getUser = async (req: Request, res: Response, next: NextFunction) => {
+    await userService.getUser(req, res, next);
+  };
+
+  /**
    * @route GET api/v1/users/me
    * @desc get user profile
    * @access Private

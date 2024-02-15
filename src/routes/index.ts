@@ -21,11 +21,11 @@ router.get("/", (req, res) => {
 });
 
 // controllers for users route
-router.use("/user", usersRoute);
+router.use("/users", usersRoute);
 
 router.use("/auth", authRoute);
 
-router.use("/events", authorizeUser, upload.single("mediaFile"), eventRoute);
+router.use("/events", upload.single("mediaFile"), eventRoute);
 
 router.use("/favourites", authorizeUser, favouriteRoute);
 
