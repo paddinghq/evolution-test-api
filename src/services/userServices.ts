@@ -15,6 +15,65 @@ import { hashData } from "../utils/authorization";
 
 class userService {
   /**
+ * @method getAllUsers
+ * @static
+ * @async
+ * @returns {Promise<IUsers>}
+ */
+
+  static async getAllUsers(req: Request, res: Response, next: NextFunction) {
+    try {
+      const page: number = parseInt(req.query.page as string, 10) || 1;
+      const limit: number = parseInt(req.query.limit as string, 10) || 10;
+      const pageSkip = (page - 1) * limit;
+
+      const users = await UserModel.find({})
+        .sort({ createdAt: -1 })
+        .skip(pageSkip)
+        .limit(limit);
+
+      const total = await UserModel.countDocuments();
+
+      return res.status(200).json({
+        success: true,
+        data: users,
+        page,
+        per_page: limit,
+        total,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * @method getUser
+   * @static
+   * @async
+   * @returns {Promise<IUsers>}
+   */
+
+  static async getUser(req: Request, res: Response, next: NextFunction) {
+    try {
+      const id: string = req.params.id;
+
+      const user = await UserModel.findOne({ _id: id });
+
+      if (!user) {
+        throw new ResourceNotFound("No user found!!");
+      }
+      return res.status(200).json({
+        success: true,
+        user,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+
+
+  /**
    * @method getUserProfile
    * @static
    * @async
