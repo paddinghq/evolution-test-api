@@ -8,7 +8,7 @@ export default class NotificationService {
   }
 
   static async getNotifications() {
-    return await NotificationModel.find()
+    return await NotificationModel.find();
   }
 
   static async countUnreadNotifications(options: Record<string, any>) {
@@ -17,6 +17,13 @@ export default class NotificationService {
 
   static async getNotification(id: string | Types.ObjectId) {
     return await NotificationModel.findById(id);
+  }
+
+  static async markAllAsRead(userId: string | Types.ObjectId) {
+    return await NotificationModel.updateMany(
+      { userId, read: false },
+      { read: true, readAt: new Date()}
+    );
   }
 
   static async updateNotification(

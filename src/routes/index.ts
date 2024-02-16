@@ -29,6 +29,6 @@ router.use("/events", upload.single("mediaFile"), eventRoute);
 
 router.use("/favourites", authorizeUser, favouriteRoute);
 
-router.use("/notifications", notificationRoute);
+router.use("/notifications", authorizeUser, notificationRoute);
 
 export default router;
