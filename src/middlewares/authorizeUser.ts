@@ -44,7 +44,7 @@ export const authorizeUser = async (
     );
 
     if (user == null) {
-      throw new Unauthorized("User not found");
+      throw new Unauthorized("Unauthorized");
     }
 
     const lastTokenDate = decodedUser.iat * 1000;

@@ -1,4 +1,5 @@
 import { type Document, Types, Schema } from "mongoose";
+import { UserNotification } from "./notificationType";
 // import { EventModel } from "../models/eventModel";
 
 export interface IUser extends Document {
@@ -23,6 +24,7 @@ export interface IUser extends Document {
   isVerified: boolean;
   registrationCompleted: boolean;
   events: Types.ObjectId[];
+  notifications: UserNotification[];
   isPasswordMatch: (inputPassword: string) => Promise<boolean>;
   generatePasswordResetToken: () => string;
 }

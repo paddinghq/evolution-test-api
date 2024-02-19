@@ -8,12 +8,23 @@ export const getNotifications = async (
   next: NextFunction,
 ) => {
   try {
-    const notifications = await NotificationService.getNotifications();
+    const authUser = req.authUser;
+    if (authUser == null) {
+      throw new Unauthorized(
+        "You do not have permissions to perform this action",
+      );
+    }
+
+    const notifications = await NotificationService.getNotifications(authUser);
+
+    if (notifications == null) {
+      throw new ResourceNotFound("You have no notifications");
+    }
 
     res.status(200).json({
       message:
         notifications.length > 0
-          ? "Notification retrieved successfully"
+          ? "Notifications retrieved successfully"
           : "You have no notifications",
       body: notifications,
       success: true,
@@ -36,8 +47,17 @@ export const getNotification = async (
       throw new ResourceNotFound("Notification id is required");
     }
 
-    const notification =
-      await NotificationService.getNotification(notificationId);
+    const authUser = req.authUser;
+    if (authUser == null) {
+      throw new Unauthorized(
+        "You do not have permissions to perform this action",
+      );
+    }
+
+    const notification = await NotificationService.getNotification(
+      notificationId,
+      authUser,
+    );
 
     if (notification == null) {
       throw new ResourceNotFound("Notification not found");
@@ -53,25 +73,24 @@ export const getNotification = async (
   }
 };
 
-// Remove notification
+// Remove notification: only admin can remove notification??
 export const removeNotification = async (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
   try {
-    const notificationId = req.params.id;
+    const notification = req.params.id;
 
     const removedNotification =
-      await NotificationService.removeNotification(notificationId);
+      await NotificationService.removeNotification(notification);
 
     res.status(200).json({
       message: removedNotification
         ? "Notification removed successfully"
         : "You have no notifications",
       body: removedNotification,
-      success: true,
-      statusCode: 200,
+      success: removedNotification ? true : false,
     });
   } catch (error: any) {
     next(error);
@@ -84,18 +103,15 @@ export const countUnreadNotifications = async (
   next: NextFunction,
 ) => {
   try {
-    const userId = req.authUser?.id;
-    if (userId == null) {
+    const authUser = req.authUser;
+    if (authUser == null) {
       throw new Unauthorized(
         "You do not have permissions to perform this action",
       );
     }
 
     const unreadNotificationCount =
-      await NotificationService.countUnreadNotifications({
-        userId,
-        read: false,
-      });
+      await NotificationService.countUnreadNotifications(authUser);
 
     res.status(200).json({
       message: "Unread notifications count retrieved successfully",
@@ -113,18 +129,48 @@ export const markAllAsRead = async (
   next: NextFunction,
 ) => {
   try {
-    const userId = req.authUser?.id;
+    const authUser = req.authUser;
 
-    if (userId == null) {
+    if (authUser == null) {
       throw new Unauthorized(
         "You do not have permissions to perform this action",
       );
     }
 
-    await NotificationService.markAllAsRead(userId);
-
+    await NotificationService.markAllAsRead(authUser);
     res.status(200).json({
       message: "All notifications marked as read",
+      success: true,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const markAsRead = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const authUser = req.authUser;
+    if (authUser == null) {
+      throw new Unauthorized(
+        "You do not have permissions to perform this action",
+      );
+    }
+
+    const notificationId = req.params.id;
+
+    if (notificationId == null || notificationId == "") {
+      throw new ResourceNotFound("Notification id is required");
+    }
+
+    const userId = authUser.id;
+
+    await NotificationService.markAsRead(userId, notificationId);
+    res.status(200).json({
+      message: "Notification marked as read",
       success: true,
     });
   } catch (error) {

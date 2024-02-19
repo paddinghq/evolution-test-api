@@ -1,6 +1,10 @@
 import jwt, { JwtPayload } from "jsonwebtoken";
 import bcrypt from "bcryptjs";
-import { InvalidInput } from "../middlewares/errorHandler";
+import {
+  Forbidden,
+  InvalidInput,
+  Unauthorized,
+} from "../middlewares/errorHandler";
 
 // Generate token for authorization
 export const generateToken = (payload: object, tokenType: string) => {
@@ -39,8 +43,8 @@ export const verifyToken = (
     const decodedUser: JwtPayload = jwt.verify(token, secretKey) as JwtPayload;
 
     return decodedUser;
-  } catch (error) {
-    throw new InvalidInput("Invalid token");
+  } catch (error: any) {
+    throw new Unauthorized(`Invalid token`);
   }
 };
 
