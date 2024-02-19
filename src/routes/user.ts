@@ -12,6 +12,6 @@ router.get("/", userController.getUsers);
 router.get("/me", authorizeUser, userController.getUserProfile);
 
 // Get User
-router.get('/:id', userController.getUser);
+router.get("/:id", userController.getUser);
 
 export default router;

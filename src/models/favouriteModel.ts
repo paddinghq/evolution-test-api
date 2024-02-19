@@ -14,7 +14,7 @@ const favouritesSchema = new Schema<IFavourite>(
       required: true,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export const FavouriteModel = model<IFavourite>("Favourite", favouritesSchema);

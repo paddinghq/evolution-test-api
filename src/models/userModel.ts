@@ -90,7 +90,7 @@ const userSchema = new Schema<IUser>(
     },
     events: { type: [mongoose.Schema.Types.ObjectId], ref: "Event" },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // For page efficient skip of page
@@ -136,7 +136,7 @@ userSchema.methods.generatePasswordResetToken = function (): string {
 
 // Verify Password
 userSchema.methods.isPasswordMatch = async function (
-  inputPassword: string
+  inputPassword: string,
 ): Promise<boolean> {
   return await bcrypt.compare(inputPassword, this.password);
 };

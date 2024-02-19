@@ -75,7 +75,7 @@ const errorHandler = (
   err: HttpError,
   req: Request,
   res: Response,
-  _next: NextFunction
+  _next: NextFunction,
 ) => {
   let statusCode = err.status || 500;
   let cleanedMessage = (
@@ -102,7 +102,7 @@ const errorHandler = (
         ]["properties"]["value"];
         if (enumValues) {
           responsePayload.message = `Invalid ${errorField}: ${invalidValue}. Must be one of [${enumValues.join(
-            ", "
+            ", ",
           )}]`;
         }
       } catch (e) {

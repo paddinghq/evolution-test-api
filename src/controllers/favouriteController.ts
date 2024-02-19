@@ -15,7 +15,7 @@ class FavouriteController {
   addFavourite = async (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> => {
     await this.favouriteService.addFavourite(req, res, next);
   };
@@ -28,7 +28,7 @@ class FavouriteController {
   getFavourites = async (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> => {
     await this.favouriteService.getFavourites(req, res, next);
   };
@@ -41,7 +41,7 @@ class FavouriteController {
   deleteFavourite = async (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> => {
     await this.favouriteService.deleteFavourite(req, res, next);
   };

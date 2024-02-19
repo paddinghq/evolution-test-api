@@ -67,7 +67,7 @@ export async function validateSignup(payload: IUser): Promise<IError[]> {
 }
 
 export async function validateCompleteSignup(
-  payload: IUser
+  payload: IUser,
 ): Promise<IError[]> {
   const errors = [];
 
