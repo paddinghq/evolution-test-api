@@ -37,7 +37,7 @@ class eventService {
       // Remove duplicate invitees
       reqBody.inviteesEmail = Array.from(new Set(reqBody.inviteesEmail));
       reqBody.inviteesPhoneNumber = Array.from(
-        new Set(reqBody.inviteesPhoneNumber)
+        new Set(reqBody.inviteesPhoneNumber),
       );
 
       let event;
@@ -73,7 +73,7 @@ class eventService {
       // Update the users database.
       await UserModel.updateOne(
         { _id: authUser?._id },
-        { $push: { events: event } }
+        { $push: { events: event } },
       );
 
       res.status(201).json({
@@ -104,7 +104,7 @@ class eventService {
   static async getEvents(
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> {
     try {
       let query = EventModel.find();

@@ -7,7 +7,6 @@ import {
   Unauthorized,
 } from "../middlewares/errorHandler";
 
-
 class FavouriteService {
   /**
    * @method addFavourite
@@ -18,7 +17,7 @@ class FavouriteService {
   static async addFavourite(
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> {
     try {
       const userId = req.authUser?.id;
@@ -63,7 +62,7 @@ class FavouriteService {
   static async getFavourites(
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> {
     try {
       const userId = req.authUser?.id;
@@ -72,7 +71,7 @@ class FavouriteService {
         throw new Unauthorized("User not authenticated");
       }
       const favourites = await FavouriteModel.find({ userId }).populate(
-        "eventId"
+        "eventId",
       );
 
       res.status(200).json({
@@ -94,7 +93,7 @@ class FavouriteService {
   static async deleteFavourite(
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> {
     try {
       const userId = req.authUser?.id;

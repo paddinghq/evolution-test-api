@@ -14,7 +14,7 @@ export const generateToken = (payload: object, tokenType: string) => {
   if (tokenType === "refresh") {
     expiresIn = "7d";
   } else if (tokenType === "reset") {
-    return 
+    return;
   } else if (tokenType === "access") {
     expiresIn = "4h";
   }
@@ -28,7 +28,7 @@ export const generateToken = (payload: object, tokenType: string) => {
 
 // Verify token
 export const verifyToken = (
-  token: string | undefined
+  token: string | undefined,
 ): JwtPayload | undefined => {
   try {
     const secretKey: string | undefined = process.env.JWT_SECRET;

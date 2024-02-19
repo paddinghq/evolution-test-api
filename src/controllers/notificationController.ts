@@ -5,7 +5,7 @@ import { ResourceNotFound, Unauthorized } from "../middlewares/errorHandler";
 export const getNotifications = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const notifications = await NotificationService.getNotifications();
@@ -27,7 +27,7 @@ export const getNotifications = async (
 export const getNotification = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const notificationId = req.params.id;
@@ -57,7 +57,7 @@ export const getNotification = async (
 export const removeNotification = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const notificationId = req.params.id;
@@ -81,13 +81,13 @@ export const removeNotification = async (
 export const countUnreadNotifications = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const userId = req.authUser?.id;
     if (userId == null) {
       throw new Unauthorized(
-        "You do not have permissions to perform this action"
+        "You do not have permissions to perform this action",
       );
     }
 
@@ -110,14 +110,14 @@ export const countUnreadNotifications = async (
 export const markAllAsRead = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const userId = req.authUser?.id;
 
     if (userId == null) {
       throw new Unauthorized(
-        "You do not have permissions to perform this action"
+        "You do not have permissions to perform this action",
       );
     }
 

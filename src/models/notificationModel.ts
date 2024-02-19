@@ -16,10 +16,10 @@ const notificationSchema = new Schema<INotification>(
       default: false,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export const NotificationModel = model<INotification>(
   "Notification",
-  notificationSchema
+  notificationSchema,
 );

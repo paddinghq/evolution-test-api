@@ -15,11 +15,11 @@ import { hashData } from "../utils/authorization";
 
 class userService {
   /**
- * @method getAllUsers
- * @static
- * @async
- * @returns {Promise<IUsers>}
- */
+   * @method getAllUsers
+   * @static
+   * @async
+   * @returns {Promise<IUsers>}
+   */
 
   static async getAllUsers(req: Request, res: Response, next: NextFunction) {
     try {
@@ -70,8 +70,6 @@ class userService {
       next(error);
     }
   }
-
-
 
   /**
    * @method getUserProfile

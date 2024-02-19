@@ -19,14 +19,14 @@ export default class NotificationService {
     return await NotificationModel.findByIdAndUpdate(
       id,
       { read: true, readAt: new Date() },
-      { useFindAndModify: false }
+      { useFindAndModify: false },
     );
   }
 
   static async markAllAsRead(userId: string | Types.ObjectId) {
     return await NotificationModel.updateMany(
       { userId, read: false },
-      { read: true, readAt: new Date() }
+      { read: true, readAt: new Date() },
     );
   }
 
@@ -34,13 +34,13 @@ export default class NotificationService {
     return await NotificationModel.findByIdAndUpdate(
       id,
       { read: true, readAt: new Date() },
-      { useFindAndModify: false }
+      { useFindAndModify: false },
     );
   }
 
   static async updateNotification(
     id: string | Types.ObjectId,
-    data: Record<string, any>
+    data: Record<string, any>,
   ) {
     return await NotificationModel.findByIdAndUpdate(id, data, {
       useFindAndModify: false,
