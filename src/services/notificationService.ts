@@ -16,13 +16,25 @@ export default class NotificationService {
   }
 
   static async getNotification(id: string | Types.ObjectId) {
-    return await NotificationModel.findById(id);
+    return await NotificationModel.findByIdAndUpdate(
+      id,
+      { read: true, readAt: new Date() },
+      { useFindAndModify: false }
+    );
   }
 
   static async markAllAsRead(userId: string | Types.ObjectId) {
     return await NotificationModel.updateMany(
       { userId, read: false },
-      { read: true, readAt: new Date()}
+      { read: true, readAt: new Date() }
+    );
+  }
+
+  static async markAsRead(id: string | Types.ObjectId) {
+    return await NotificationModel.findByIdAndUpdate(
+      id,
+      { read: true, readAt: new Date() },
+      { useFindAndModify: false }
     );
   }
 
