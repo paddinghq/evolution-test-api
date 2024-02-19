@@ -12,6 +12,7 @@ import {
 import { UserModel } from "../models/userModel";
 import { IUser } from "../types/types";
 import { saveToCloudinary } from "../utils/mediaUpload";
+import triggerNotification from "../utils/triggerNotification";
 
 class eventService {
   /**
@@ -75,10 +76,18 @@ class eventService {
         { $push: { events: event } }
       );
 
-      return res.status(201).json({
+      res.status(201).json({
         success: true,
         message: "Event created successfully!",
         data: event,
+      });
+
+      // trigger notification
+      triggerNotification({
+        title: event.eventName,
+        content: `${authUser?.fullName} created a new event: ${event.eventName}`,
+        userId: authUser?._id,
+        notificationIcon: "",
       });
     } catch (error) {
       next(error);
