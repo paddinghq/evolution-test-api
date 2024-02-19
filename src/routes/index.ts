@@ -25,10 +25,10 @@ router.use("/users", usersRoute);
 
 router.use("/auth", authRoute);
 
-router.use("/events", upload.single("mediaFile"), eventRoute);
+router.use("/events", upload.single("mediaFile"), authorizeUser, eventRoute);
 
 router.use("/favourites", authorizeUser, favouriteRoute);
 
-router.use("/notifications", notificationRoute);
+router.use("/notifications", authorizeUser, notificationRoute);
 
 export default router;

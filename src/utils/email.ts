@@ -19,7 +19,7 @@ function initializeTransporter() {
 export const sendMail = async (
   email: string,
   subject: string,
-  text: string
+  text: string,
 ): Promise<void> => {
   const mailOption = {
     from: process.env.MAIL_USER,
@@ -44,7 +44,10 @@ interface IOtp {
 }
 
 // Separate function for handling email verification
-export async function handleEmailVerification(email?: string,subject? :any): Promise<IOtp> {
+export async function handleEmailVerification(
+  email?: string,
+  subject?: any,
+): Promise<IOtp> {
   if (email == null) {
     return {};
   }
@@ -54,7 +57,7 @@ export async function handleEmailVerification(email?: string,subject? :any): Pro
   await sendMail(
     email,
     subject,
-    `Your verification code is: ${verificationCode}`
+    `Your verification code is: ${verificationCode}`,
   );
 
   return { verificationCode, otpExpiry };

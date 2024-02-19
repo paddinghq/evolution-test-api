@@ -32,7 +32,7 @@ class AuthService {
   static async signup(
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> {
     try {
       const reqBody: IUser = {
@@ -68,7 +68,7 @@ class AuthService {
 
       const { verificationCode, otpExpiry } = await handleEmailVerification(
         email,
-        "Email Verification Code"
+        "Email Verification Code",
       );
 
       await newUser.updateOne({ otp: verificationCode, otpExpiry });
@@ -99,7 +99,7 @@ class AuthService {
   static async verifyOtp(
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> {
     try {
       const { email, otp } = req.body;
@@ -114,7 +114,7 @@ class AuthService {
 
       if (user.otpExpiry && user.otpExpiry < new Date()) {
         throw new Unauthorized(
-          "Verification code has expired, request for a new one"
+          "Verification code has expired, request for a new one",
         );
       }
 
@@ -143,7 +143,7 @@ class AuthService {
   static async signin(
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> {
     try {
       const reqBody: SignInUser = req.body;
@@ -183,7 +183,6 @@ class AuthService {
         token,
       };
 
-
       res.status(200).json(resPayload);
 
       // httpLogger.info(
@@ -205,7 +204,7 @@ class AuthService {
   static async completeSignup(
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> {
     try {
       const reqBody = {
@@ -235,7 +234,7 @@ class AuthService {
       const updatedUser = await UserModel.findOneAndUpdate(
         { email },
         { ...reqBody, registrationCompleted: true },
-        { new: true, runValidators: true }
+        { new: true, runValidators: true },
       );
 
       if (updatedUser == null) {
@@ -269,7 +268,7 @@ class AuthService {
   static async requestOtp(
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> {
     try {
       const { email } = req.body;
@@ -286,7 +285,7 @@ class AuthService {
 
       const { verificationCode, otpExpiry } = await handleEmailVerification(
         email,
-        "Email Verification Code"
+        "Email Verification Code",
       );
 
       // httpLogger.info("Verification email sent successfully");
@@ -316,7 +315,7 @@ class AuthService {
   static async forgotpassword(
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> {
     try {
       const { email } = req.body;
@@ -329,7 +328,7 @@ class AuthService {
 
       const { verificationCode, otpExpiry } = await handleEmailVerification(
         email.toLowerCase(),
-        "Password Verification Code"
+        "Password Verification Code",
       );
 
       user.otp = verificationCode;
@@ -357,7 +356,7 @@ class AuthService {
   static async resetpassword(
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> {
     try {
       const { email, otp, password, confirmPassword } = req.body;
@@ -372,7 +371,7 @@ class AuthService {
       if (errors.length > 0) {
         throw new InvalidInput("Invalid input", errors);
       }
-      
+
       const otpExpiry = user?.otpExpiry;
 
       if (otp !== user.otp) {
