@@ -38,6 +38,13 @@ export default class NotificationService {
     );
   }
 
+  static async markAllAsRead(userId: string | Types.ObjectId) {
+    return await NotificationModel.updateMany(
+      { userId, read: false },
+      { read: true, readAt: new Date()}
+    );
+  }
+
   static async updateNotification(
     id: string | Types.ObjectId,
     data: Record<string, any>,
