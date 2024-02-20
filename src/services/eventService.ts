@@ -13,6 +13,7 @@ import { UserModel } from "../models/userModel";
 import { IUser } from "../types/types";
 import { saveToCloudinary } from "../utils/mediaUpload";
 import triggerNotification from "../utils/triggerNotification";
+import { INotificationUser } from "../types/notificationType";
 
 class eventService {
   /**
@@ -37,7 +38,7 @@ class eventService {
       // Remove duplicate invitees
       reqBody.inviteesEmail = Array.from(new Set(reqBody.inviteesEmail));
       reqBody.inviteesPhoneNumber = Array.from(
-        new Set(reqBody.inviteesPhoneNumber),
+        new Set(reqBody.inviteesPhoneNumber)
       );
 
       let event;
@@ -73,7 +74,7 @@ class eventService {
       // Update the users database.
       await UserModel.updateOne(
         { _id: authUser?._id },
-        { $push: { events: event } },
+        { $push: { events: event } }
       );
 
       res.status(201).json({
@@ -82,13 +83,25 @@ class eventService {
         data: event,
       });
 
+      const users = await UserModel.find();
+
       // trigger notification
-      triggerNotification({
+      const notification = await triggerNotification({
         title: event.eventName,
         content: `${authUser?.fullName} created a new event: ${event.eventName}`,
-        userId: authUser?._id,
+        users,
         notificationIcon: "",
       });
+
+      if (notification == null) {
+        throw new ServerError("Could not trigger notification");
+      }
+
+      // add the notification to all users in the database
+      await UserModel.updateMany(
+        { _id: { $in: users } },
+        { $push: { notifications: { notification: notification._id } } }
+      ).exec();
     } catch (error) {
       next(error);
     }
@@ -104,7 +117,7 @@ class eventService {
   static async getEvents(
     req: Request,
     res: Response,
-    next: NextFunction,
+    next: NextFunction
   ): Promise<void> {
     try {
       let query = EventModel.find();

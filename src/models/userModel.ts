@@ -89,6 +89,20 @@ const userSchema = new Schema<IUser>(
       default: false,
     },
     events: { type: [mongoose.Schema.Types.ObjectId], ref: "Event" },
+    notifications: {
+      type: [
+        {
+          notification: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Notification",
+          },
+          read: { type: Boolean, default: false },
+          readAt: { type: Date },
+        },
+      ],
+      _id: false,
+      default: [],
+    },
   },
   { timestamps: true },
 );

@@ -4,16 +4,25 @@ export default interface INotification {
   event?: Types.ObjectId;
   content: string;
   eventUrl?: string;
-  readAt?: Date;
   id?: Types.ObjectId;
   title: string;
   notificationIcon: string;
-  userId: Types.ObjectId;
-  read?: Boolean;
+  users: INotificationUser[];
   createdAt?: Date;
 }
 
 export interface INotificationUpdate {
   seen?: boolean;
+  readAt?: Date;
+}
+
+export interface INotificationUser {
+  _id: Types.ObjectId;
+  email: string;
+}
+
+export interface UserNotification {
+  notification: Types.ObjectId;
+  read: boolean;
   readAt?: Date;
 }
