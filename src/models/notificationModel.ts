@@ -1,6 +1,7 @@
-import { model, Schema, Types } from "mongoose";
+import { model, PaginateModel, Schema, Types } from "mongoose";
 import INotification from "../types/notificationType";
 import { UserModel } from "./userModel";
+import paginate from "mongoose-paginate-v2";
 
 export const notificationSchema = new Schema<INotification>(
   {
@@ -19,6 +20,9 @@ export const notificationSchema = new Schema<INotification>(
   { timestamps: true },
 );
 
+notificationSchema.plugin(paginate);
+
+
 notificationSchema.post("findOneAndDelete", async function () {
   const notificationId = this.getFilter()["_id"];
 
@@ -28,7 +32,7 @@ notificationSchema.post("findOneAndDelete", async function () {
   );
 });
 
-export const NotificationModel = model<INotification>(
+export const NotificationModel = model<INotification, PaginateModel<INotification>>(
   "Notification",
   notificationSchema,
 );

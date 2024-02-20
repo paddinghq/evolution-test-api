@@ -21,6 +21,8 @@ export const getNotifications = async (
       throw new ResourceNotFound("You have no notifications");
     }
 
+    
+
     res.status(200).json({
       message:
         notifications.length > 0
