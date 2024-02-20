@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import NotificationService from "../services/notificationService";
 import { ResourceNotFound, Unauthorized } from "../middlewares/errorHandler";
+import { NotificationModel } from "../models/notificationModel";
 
 export const getNotifications = async (
   req: Request,
@@ -15,22 +16,81 @@ export const getNotifications = async (
       );
     }
 
-    const notifications = await NotificationService.getNotifications(authUser);
+    let notifications = await NotificationService.getNotifications(authUser);
 
     if (notifications == null) {
       throw new ResourceNotFound("You have no notifications");
     }
 
-    
+    const filters = req.query;
+    const pageQuery: number = parseInt(req.query.page as string, 10) || 1;
+    const limit: number = parseInt(req.query.limit as string, 10) || 10;
 
-    res.status(200).json({
+
+    if (filters && typeof filters === "object") {
+      for (const key in filters) {
+        if (filters.hasOwnProperty(key)) {
+          if (NotificationModel.schema.paths.hasOwnProperty(key)) {
+            notifications = notifications.where(key).equals(filters[key]);
+          }
+        }
+      }
+    }
+
+    if (filters && filters.dateRange) {
+      const dateRange = filters.dateRange;
+      let startDate;
+
+      if (dateRange === "last7days") {
+        startDate = new Date();
+        startDate.setDate(startDate.getDate() - 7);
+      } else if (dateRange === "last30days") {
+        startDate = new Date();
+        startDate.setDate(startDate.getDate() - 30);
+      }
+
+      if (startDate) {
+        notifications = notifications.where("createdAt").gte(startDate);
+      }
+    }
+
+    const { docs, hasPrevPage, hasNextPage, prevPage, nextPage, page } =
+      await NotificationModel.paginate(notifications, {
+        limit,
+        page: pageQuery,
+        lean: true,
+      });
+
+    notifications = docs;
+
+    if (!notifications) {
+      throw new ResourceNotFound('resource not found!')
+    }
+
+    const resPayload = {
+      success: true,
       message:
         notifications.length > 0
-          ? "Notifications retrieved successfully"
+          ? "Notification retrieved successfully"
           : "You have no notifications",
       body: notifications,
-      success: true,
-    });
+      hasPrevPage,
+      hasNextPage,
+      prevPage,
+      nextPage,
+      page,
+    };
+
+    res.status(200).json(resPayload);
+
+    // res.status(200).json({
+    //   message:
+    //     notifications.length > 0
+    //       ? "Notifications retrieved successfully"
+    //       : "You have no notifications",
+    //   body: notifications,
+    //   success: true,
+    // });
   } catch (error: any) {
     next(error);
   }
