@@ -1,23 +1,32 @@
-import { model, Schema } from "mongoose";
+import { model, Schema, Types } from "mongoose";
 import INotification from "../types/notificationType";
+import { UserModel } from "./userModel";
 
-const notificationSchema = new Schema<INotification>(
+export const notificationSchema = new Schema<INotification>(
   {
     event: Schema.Types.ObjectId,
     content: String,
     eventUrl: String,
-    readAt: Date,
     title: String,
     notificationIcon: String,
-    userId: Schema.Types.ObjectId,
-    // userType: String,
-    read: {
-      type: Boolean,
-      default: false,
-    },
+    users: [
+      {
+        email: String,
+        _id: Types.ObjectId,
+      },
+    ],
   },
   { timestamps: true },
 );
+
+notificationSchema.post("findOneAndDelete", async function () {
+  const notificationId = this.getFilter()["_id"];
+
+  await UserModel.updateMany(
+    {},
+    { $pull: { notifications: { notification: notificationId } } },
+  );
+});
 
 export const NotificationModel = model<INotification>(
   "Notification",
