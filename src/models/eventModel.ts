@@ -1,6 +1,7 @@
 import { Schema, model, PaginateModel } from "mongoose";
 import { IEvent } from "../types/eventType";
 import paginate from "mongoose-paginate-v2";
+import { UserModel } from "./userModel";
 
 // Schema for the event document
 const eventSchema = new Schema<IEvent>(
@@ -51,15 +52,19 @@ const eventSchema = new Schema<IEvent>(
     isIVCardPresent: { type: Boolean, default: false },
     createdBy: { type: Schema.Types.ObjectId, ref: "User" },
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
 eventSchema.plugin(paginate);
 
-// interface EventDocument extends Document, IEventData {}
+eventSchema.post("findOneAndDelete", async function () {
+  const eventId = this.getFilter()["_id"];
+
+  await UserModel.updateMany({}, { $pull: { events: eventId } });
+});
 
 export const EventModel = model<IEvent, PaginateModel<IEvent>>(
   "Event",
   eventSchema,
-  "events",
+  "events"
 );

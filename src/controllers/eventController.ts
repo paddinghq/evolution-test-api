@@ -40,6 +40,28 @@ class EventController {
   getEvent = async (req: Request, res: Response, next: NextFunction) => {
     await this.eventService.getEvent(req, res, next);
   };
+
+    /**
+   * @route PATCH api/v1/events/:id
+   * @desc Update an event
+   * @access Private
+   * @async
+   */
+
+    updateEvent = async (req: Request, res: Response, next: NextFunction) => {
+      await this.eventService.updateEvent(req, res, next);
+    };
+  
+    /**
+     * @route DELETE api/v1/events/:id
+     * @desc Delete an event
+     * @access Private
+     * @async
+     */
+  
+    deleteEvent = async (req: Request, res: Response, next: NextFunction) => {
+      await this.eventService.deleteEvent(req, res, next);
+    };
 }
 
 export default EventController;
