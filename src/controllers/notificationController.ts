@@ -166,7 +166,10 @@ export const markAsRead = async (
       throw new ResourceNotFound("Notification id is required");
     }
 
-    await NotificationService.markAsRead(authUser, notificationId);
+    const status = await NotificationService.markAsRead(authUser, notificationId);
+    if (status == null) {
+      throw new ResourceNotFound("Notification not found");
+    }
     res.status(200).json({
       message: "Notification marked as read",
       success: true,

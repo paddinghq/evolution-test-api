@@ -64,6 +64,7 @@ export default class NotificationService {
     const notificationIndex = user.notifications.findIndex(
       (n) => n.notification?._id == notificationId
     );
+
     if (notificationIndex === -1) {
       return null;
     }
@@ -72,6 +73,8 @@ export default class NotificationService {
       user.notifications[notificationIndex].readAt = new Date();
       await user.save();
     }
+
+    return "done";
   }
 
   static async markAllAsRead(user: IUser) {

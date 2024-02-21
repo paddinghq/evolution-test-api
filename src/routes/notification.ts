@@ -16,10 +16,10 @@ router.get("/unread-count", countUnreadNotifications);
 
 router.put("/mark-all-as-read", markAllAsRead);
 
-router.put("/read/:id", markAsRead)
-
 // Get Notification by id
 router.get("/:id", getNotification);
+
+router.put("/:id", markAsRead)
 
 // Remove Notification by id
 router.delete("/:id", removeNotification);

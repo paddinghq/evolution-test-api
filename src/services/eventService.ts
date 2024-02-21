@@ -8,6 +8,7 @@ import {
   ServerError,
   ResourceNotFound,
   BadRequest,
+  Forbidden,
 } from "../middlewares/errorHandler";
 import { UserModel } from "../models/userModel";
 import { IUser } from "../types/types";
@@ -198,6 +199,97 @@ class eventService {
       //     "Event retrieved successfully",
       //     formatHTTPLoggerResponse(req, res, resPayload)
       //   );
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * @method updateEvent
+   * @static
+   * @async
+   * @returns {Promise<void>}
+   */
+
+  static async updateEvent(req: Request, res: Response, next: NextFunction) {
+    try {
+      const reqBody: IEvent = req.body;
+      const eventId = req.params.id;
+
+      // Validate input
+      const errors: IError[] = await validateEventUpdate(reqBody);
+      if (errors.length > 0) {
+        throw new InvalidInput("Invalid Input", errors);
+      }
+
+      const authUser: IUser | undefined = req.authUser;
+
+      const event = await EventModel.findOne({ _id: eventId });
+
+      if (!event) {
+        throw new ResourceNotFound("Event not found");
+      }
+
+      if (event.createdBy.toString() !== authUser?._id.toString()) {
+        throw new ResourceNotFound("Event not found");
+      }
+
+      delete reqBody._id; // Remove the _id field from the request body, if it exists to avoid update error
+
+      const updatedEvent = await EventModel.findByIdAndUpdate(
+        eventId,
+        reqBody,
+        { new: true, runValidators: true }
+      ).exec();
+
+      if (!updatedEvent) {
+        throw new ServerError("An error occurred trying to update the event");
+      }
+
+      res.status(200).json({
+        success: true,
+        message: "Event updated successfully",
+        data: updatedEvent,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * @method deleteEvent
+   * @static
+   * @async
+   * @returns {Promise<void>}
+   */
+  static async deleteEvent(req: Request, res: Response, next: NextFunction) {
+    try {
+      const eventId = req.params.id;
+
+      const authUser: IUser | undefined = req.authUser;
+      if (authUser == null ) {
+
+      }
+
+      const event = await EventModel.findOne({
+        _id: eventId,
+      });
+
+      if (!event) {
+        throw new ResourceNotFound("Event not found");
+      }
+
+      if (event.createdBy.toString() !== authUser?._id.toString()) {
+        throw new Forbidden("You are not authorized to delete this event");
+      }
+
+      await EventModel.findOneAndDelete({ _id: eventId });
+
+      const responsePayload = {
+        success: true,
+        message: "Event deleted successfully",
+      };
+      res.status(200).json(responsePayload);
     } catch (error) {
       next(error);
     }
