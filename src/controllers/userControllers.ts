@@ -33,6 +33,16 @@ class UserController {
   getUserProfile = async (req: Request, res: Response, next: NextFunction) => {
     await this.userService.getUserProfile(req, res, next);
   };
+
+  /**
+   * @route PATCH api/v1/users/me
+   * @desc Update a user profile
+   * @access Public
+   */
+
+  updateUserProfile = async (req: Request, res: Response, next: NextFunction) => {
+    await this.userService.updateUserProfile(req, res, next);
+  };
 }
 
 export default UserController;

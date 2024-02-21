@@ -11,6 +11,8 @@ router.get("/", userController.getUsers);
 // Get user profile
 router.get("/me", authorizeUser, userController.getUserProfile);
 
+router.patch("/me", authorizeUser, userController.updateUserProfile);
+
 // Get User
 router.get("/:id", userController.getUser);
 

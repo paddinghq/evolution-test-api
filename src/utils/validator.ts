@@ -260,3 +260,48 @@ export function validateId(id: string): IError[] {
 
   return errors;
 }
+
+export async function validateUpdateUser(
+  id: string,
+  payload: IUser
+): Promise<IError[]> {
+  const errors = [];
+
+  if (payload == null || JSON.stringify(payload) === "{}") {
+    errors.push({
+      field: "payload",
+      message: "Payload is required",
+    });
+    return errors;
+  }
+
+  const { email, password, dateOfBirth } = payload;
+
+  if (email) {
+    const emailErrors = validateEmail(email);
+    if (emailErrors.length > 0) {
+      errors.push(...emailErrors);
+
+      const idErrors = validateId(id);
+      if (idErrors.length > 0) {
+        errors.push(...idErrors);
+      }
+    }
+  }
+
+  if (password) {
+    const passwordErrors = validatePassword(password);
+    if (passwordErrors.length > 0) {
+      errors.push(...passwordErrors);
+    }
+  }
+
+  if (dateOfBirth) {
+    const dateOfBirthErrors = validateDateOfBirth(dateOfBirth);
+    if (dateOfBirthErrors.length > 0) {
+      errors.push(...dateOfBirthErrors);
+    }
+  }
+
+  return errors;
+}
