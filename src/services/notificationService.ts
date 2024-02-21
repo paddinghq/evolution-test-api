@@ -10,9 +10,9 @@ export default class NotificationService {
   }
 
   static async getNotifications(user: IUser) {
-    await user.populate("notifications.notification", "-__v -users");
+    return await user.populate("notifications.notification", "-__v -users");
 
-    return user.notifications;
+    // return user.notifications;
   }
 
   static async countUnreadNotifications(user: IUser) {

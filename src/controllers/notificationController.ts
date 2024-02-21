@@ -16,9 +16,10 @@ export const getNotifications = async (
       );
     }
 
-    let notifications = await NotificationService.getNotifications(authUser);
+    let userNotifications = await NotificationService.getNotifications(authUser);
+    let query = NotificationModel.find()
 
-    if (notifications == null) {
+    if (query == null) {
       throw new ResourceNotFound("You have no notifications");
     }
 
@@ -31,7 +32,7 @@ export const getNotifications = async (
       for (const key in filters) {
         if (filters.hasOwnProperty(key)) {
           if (NotificationModel.schema.paths.hasOwnProperty(key)) {
-            notifications = notifications.where(key).equals(filters[key]);
+            query = query.where(key).equals(filters[key]);
           }
         }
       }
@@ -39,29 +40,30 @@ export const getNotifications = async (
 
     if (filters && filters.dateRange) {
       const dateRange = filters.dateRange;
-      let startDate;
+      let startDate = new Date();
 
       if (dateRange === "last7days") {
-        startDate = new Date();
         startDate.setDate(startDate.getDate() - 7);
+        
       } else if (dateRange === "last30days") {
-        startDate = new Date();
         startDate.setDate(startDate.getDate() - 30);
       }
 
-      if (startDate) {
-        notifications = notifications.where("createdAt").gte(startDate);
+      console.log(startDate, typeof startDate, 'herrrrrreeeee');
+      
+      if (startDate instanceof Date) {
+        query = query.where("createdAt").gte(startDate.getTime());
       }
     }
 
     const { docs, hasPrevPage, hasNextPage, prevPage, nextPage, page } =
-      await NotificationModel.paginate(notifications, {
+      await NotificationModel.paginate(query, {
         limit,
         page: pageQuery,
         lean: true,
       });
 
-    notifications = docs;
+    const notifications = docs.filter((doc) => doc?._id === userNotifications?._id);
 
     if (!notifications) {
       throw new ResourceNotFound('resource not found!')
@@ -73,7 +75,7 @@ export const getNotifications = async (
         notifications.length > 0
           ? "Notification retrieved successfully"
           : "You have no notifications",
-      body: notifications,
+      notifications,
       hasPrevPage,
       hasNextPage,
       prevPage,
