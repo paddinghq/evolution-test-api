@@ -6,7 +6,7 @@ const router = express.Router();
 const authController = new AuthController();
 
 // route for authentication
-router.get("/", (req, res) => {
+router.get("/", (_req, res) => {
   res.send("auth route");
 });
 

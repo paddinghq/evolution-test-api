@@ -15,9 +15,12 @@ export const getNotifications = async (
         "You do not have permissions to perform this action",
       );
     }
+    // Retrieve notification from notification services
+    const userNotifications = await NotificationService.getNotifications(authUser);
 
-    let userNotifications = await NotificationService.getNotifications(authUser);
+    // Query the notification database.
     let query = NotificationModel.find()
+
 
     if (query == null) {
       throw new ResourceNotFound("You have no notifications");
@@ -27,7 +30,7 @@ export const getNotifications = async (
     const pageQuery: number = parseInt(req.query.page as string, 10) || 1;
     const limit: number = parseInt(req.query.limit as string, 10) || 10;
 
-
+    // Validate the filter keys for pagination
     if (filters && typeof filters === "object") {
       for (const key in filters) {
         if (filters.hasOwnProperty(key)) {
@@ -38,19 +41,20 @@ export const getNotifications = async (
       }
     }
 
+    // Validate the filter keys(query params) for notifications based on number of days
     if (filters && filters.dateRange) {
       const dateRange = filters.dateRange;
       let startDate = new Date();
 
+      // set for the last 7days
       if (dateRange === "last7days") {
         startDate.setDate(startDate.getDate() - 7);
-        
+
+        // Set for the last 30 days
       } else if (dateRange === "last30days") {
         startDate.setDate(startDate.getDate() - 30);
       }
 
-      console.log(startDate, typeof startDate, 'herrrrrreeeee');
-      
       if (startDate instanceof Date) {
         query = query.where("createdAt").gte(startDate.getTime());
       }
@@ -63,8 +67,12 @@ export const getNotifications = async (
         lean: true,
       });
 
-    const notifications = docs.filter((doc) => doc?._id === userNotifications?._id);
+    // Retuns only paginated notifications referenced in the user DB
+    const notifications = docs.filter((doc) =>
+      userNotifications.some((element) => doc._id === element.notification._id)
+    );
 
+    
     if (!notifications) {
       throw new ResourceNotFound('resource not found!')
     }
