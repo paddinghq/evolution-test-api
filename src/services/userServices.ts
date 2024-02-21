@@ -7,9 +7,10 @@ import {
   InvalidInput,
   ResourceNotFound,
   ServerError,
+  Unauthorized,
 } from "../middlewares/errorHandler";
 import { IUser } from "../types/types";
-import { IError } from "../utils/validator";
+import { IError, validateUpdateUser } from "../utils/validator";
 import { handleEmailVerification } from "../utils/email";
 import { hashData } from "../utils/authorization";
 
@@ -106,6 +107,88 @@ class userService {
       //   `Failed with ${error} error`,
       //   formatHTTPLoggerResponse(req, res, { message: error })
       // );
+      next(error);
+    }
+  }
+
+  /**
+   * @method updateUserProfile
+   * @static
+   * @async
+   * @returns {Promise<void>}
+   */
+
+  static async updateUserProfile(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const authUserId = req.authUser?.id;
+
+      if (authUserId == null) {
+        throw new Unauthorized("You are not authorized to perform this action");
+      }
+
+      const reqBody: IUser = {
+        ...req.body,
+        _id: undefined,
+        isVerified: undefined,
+        registrationCompleted: undefined
+      }; // Remove _id and isVerified from reqBody
+
+      const errors: IError[] = await validateUpdateUser(authUserId, reqBody);
+
+      if (errors.length > 0) {
+        throw new InvalidInput("Invalid input", errors);
+      }
+
+      const user = await UserModel.findById(authUserId);
+      if (!user) {
+        throw new ResourceNotFound("User not found");
+      }
+
+      const { email } = reqBody;
+
+      // verify email
+      if (email) {
+        if (email === user.email) {
+          throw new InvalidInput(
+            "Invalid input",
+            "You cannot use the same email"
+          );
+        }
+        const { verificationCode, otpExpiry } = await handleEmailVerification(
+          reqBody.email
+        );
+
+        reqBody.otp = verificationCode;
+        reqBody.otpExpiry = otpExpiry;
+        reqBody.isVerified = false;
+      }
+
+      if (reqBody.password) {
+        reqBody.password = await hashData(reqBody.password);
+      }
+      
+      let updatedUser = await UserModel.findByIdAndUpdate(
+        authUserId,
+        { $set: reqBody },
+        { new: true, runValidators: true }
+      );
+
+      if (!updatedUser) {
+        throw new ServerError("Failed to update user");
+      }
+
+      const responsePayload = {
+        success: true,
+        message: "User updated successfully",
+        user: updatedUser.toJSON(),
+      };
+
+      res.status(200).json(responsePayload);
+    } catch (error) {
       next(error);
     }
   }
