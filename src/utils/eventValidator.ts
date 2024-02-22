@@ -36,8 +36,6 @@ export async function validateEvent(payload: IEvent): Promise<IError[]> {
       });
     }
   }
-
-  console.log(otherDetails.eventName, "heeeeeerrrrreeeee!!");
   
 
   // Validate event name field
