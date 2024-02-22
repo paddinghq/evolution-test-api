@@ -22,7 +22,7 @@ export const getNotifications = async (
     let query = NotificationModel.find()
 
 
-    if (query == null) {
+    if (query == null || userNotifications == null) {
       throw new ResourceNotFound("You have no notifications");
     }
 
@@ -81,7 +81,7 @@ export const getNotifications = async (
       success: true,
       message:
         notifications.length > 0
-          ? "Notification retrieved successfully"
+          ? "Notifications retrieved successfully"
           : "You have no notifications",
       notifications,
       hasPrevPage,

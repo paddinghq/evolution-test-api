@@ -37,6 +37,9 @@ export async function validateEvent(payload: IEvent): Promise<IError[]> {
     }
   }
 
+  console.log(otherDetails.eventName, "heeeeeerrrrreeeee!!");
+  
+
   // Validate event name field
   if (!otherDetails.eventName || otherDetails.eventName.length < 3) {
     errors.push({

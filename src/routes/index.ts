@@ -25,7 +25,7 @@ router.use("/users", usersRoute);
 
 router.use("/auth", authRoute);
 
-router.use("/events", upload.single("mediaFile"), authorizeUser, eventRoute);
+router.use("/events", upload.single("file"), authorizeUser, eventRoute);
 
 router.use("/favourites", authorizeUser, favouriteRoute);
 
