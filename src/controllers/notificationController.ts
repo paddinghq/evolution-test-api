@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import NotificationService from "../services/notificationService";
 import { ResourceNotFound, Unauthorized } from "../middlewares/errorHandler";
+import { NotificationModel } from "../models/notificationModel";
 
 export const getNotifications = async (
   req: Request,
@@ -14,21 +15,92 @@ export const getNotifications = async (
         "You do not have permissions to perform this action",
       );
     }
+    // Retrieve notification from notification services
+    const userNotifications = await NotificationService.getNotifications(authUser);
 
-    const notifications = await NotificationService.getNotifications(authUser);
+    // Query the notification database.
+    let query = NotificationModel.find()
 
-    if (notifications == null) {
+
+    if (query == null || userNotifications == null) {
       throw new ResourceNotFound("You have no notifications");
     }
 
-    res.status(200).json({
+    const filters = req.query;
+    const pageQuery: number = parseInt(req.query.page as string, 10) || 1;
+    const limit: number = parseInt(req.query.limit as string, 10) || 10;
+
+    // Validate the filter keys for pagination
+    if (filters && typeof filters === "object") {
+      for (const key in filters) {
+        if (filters.hasOwnProperty(key)) {
+          if (NotificationModel.schema.paths.hasOwnProperty(key)) {
+            query = query.where(key).equals(filters[key]);
+          }
+        }
+      }
+    }
+
+    // Validate the filter keys(query params) for notifications based on number of days
+    if (filters && filters.dateRange) {
+      const dateRange = filters.dateRange;
+      let startDate = new Date();
+
+      // set for the last 7days
+      if (dateRange === "last7days") {
+        startDate.setDate(startDate.getDate() - 7);
+
+        // Set for the last 30 days
+      } else if (dateRange === "last30days") {
+        startDate.setDate(startDate.getDate() - 30);
+      }
+
+      if (startDate instanceof Date) {
+        query = query.where("createdAt").gte(startDate.getTime());
+      }
+    }
+
+    const { docs, hasPrevPage, hasNextPage, prevPage, nextPage, page } =
+      await NotificationModel.paginate(query, {
+        limit,
+        page: pageQuery,
+        lean: true,
+      });
+
+    // Retuns only paginated notifications referenced in the user DB
+    const notifications = docs.filter((doc) =>
+      userNotifications.some((element) => doc._id === element.notification._id)
+    );
+
+    
+    if (!notifications) {
+      throw new ResourceNotFound('resource not found!')
+    }
+
+    const resPayload = {
+      success: true,
       message:
         notifications.length > 0
           ? "Notifications retrieved successfully"
           : "You have no notifications",
-      body: notifications,
-      success: true,
-    });
+      notifications,
+      hasPrevPage,
+      hasNextPage,
+      prevPage,
+      nextPage,
+      page,
+    };
+
+    res.status(200).json(resPayload);
+
+    // res.status(200).json({
+    //   message:
+    //     notifications.length > 0
+    //       ? "Notifications retrieved successfully"
+    //       : "You have no notifications",
+    //   body: notifications,
+    //   success: true,
+    // });
   } catch (error: any) {
     next(error);
   }
