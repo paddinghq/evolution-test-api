@@ -1,5 +1,4 @@
 import { NotificationModel } from "../models/notificationModel";
-import { UserModel } from "../models/userModel";
 import INotification from "../types/notificationType";
 import { Types } from "mongoose";
 import { IUser } from "../types/types";
@@ -11,7 +10,6 @@ export default class NotificationService {
 
   static async getNotifications(user: IUser) {
     await user.populate("notifications.notification", "-__v -users");
-
     return user.notifications;
   }
 

@@ -36,6 +36,7 @@ export async function validateEvent(payload: IEvent): Promise<IError[]> {
       });
     }
   }
+  
 
   // Validate event name field
   if (!otherDetails.eventName || otherDetails.eventName.length < 3) {
